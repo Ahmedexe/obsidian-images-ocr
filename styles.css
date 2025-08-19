@@ -1,10 +1,10 @@
 /* For the container element */
-.ocr-container {
+.ocr-container-Multilingual-OCR {
     overflow: auto;
 }
   
   /* For the <pre> element */
-  .ocr-output {
+  .ocr-output-Multilingual-OCR {
     white-space: pre-wrap;
     word-break: break-word;
     overflow-y: auto;
@@ -15,19 +15,19 @@
 }
 
 /* for arabic text */
-.isArabic {
+.isArabic-Multilingual-OCR {
     direction: rtl;
     text-align: right;
 }
 
 /* Style for the title element */
-.ocr-title {
+.ocr-title-Multilingual-OCR {
     margin-bottom: 0.5rem;
     white-space: pre-wrap;
     word-break: break-word;
 }
 
-.modal-input {
+.modal-input-Multilingual-OCR {
     width: 100%;
     margin-bottom: 2vh;
 }

@@ -30,63 +30,20 @@ export default class OCRPlugin extends Plugin {
     this.addCommand({
       id: 'ocr-image-to-clipboard',
       name: 'OCR of the last image in the active note',
-      callback: async () => {
+      checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
+
         if (!file) {
           new Notice("No active file.");
-          return;
-        }
-    
-        const content = await this.app.vault.read(file);
-
-        // determine image links using regix
-        const matches = [...content.matchAll(/!\[\[(.+?\.(?:png|jpe?g))\]\]/gi)];
-
-        // find last appended image
-        const imageFile = matches[matches.length - 1][1];
-
-        if (matches.length === 0) {
-          new Notice("No image found in note.");
-          return;
+          return false;
         }
 
-        const baseFolder = this.settings.defaultImageFolder.replace(/^\/|\/$/g, ''); // remove leading/trailing slashes
-        const fullRelativePath = `${baseFolder}/${imageFile}`;
+        if (!checking) {
+          this.runLastImageinActiveNoteAsync(file)
 
-        const image = this.app.vault.getAbstractFileByPath(fullRelativePath);
-        console.log(fullRelativePath)
-
-        if (!(image instanceof TFile)) {
-          new Notice("Image file not found in vault.");
-          return;
         }
 
-        
-        try {
-
-          const buffer = await this.app.vault.readBinary(image); // <-- returns Uint8Array
-          // Convert ArrayBuffer to Blob
-          const blob = new Blob([buffer]);
-  
-          // Create an object URL that Tesseract can consume
-          const imageUrl = URL.createObjectURL(blob);
-                  
-          
-      
-          new Notice(`Running OCR on ${imageFile}...`);
-
-          const result = await Tesseract.recognize(imageUrl, this.settings.ocrLang); // use Tesseract
-          const text = result.data.text;
-    
-          // Copy to clipboard using web API
-          await navigator.clipboard.writeText(text);
-          new Notice("OCR result copied to clipboard :)");
-          await this.showOcrResultInSidebar(text, imageFile, this.settings.ocrLang); // show the result in the sidebar
-          new Notice("OCR result is shown in the side bar :)");
-        } catch (err) {
-          console.error("OCR failed:", err);
-          new Notice("OCR failed.");
-        }
+        return true
       }
 
       
@@ -197,6 +154,61 @@ export default class OCRPlugin extends Plugin {
     
   
   }
+
+  async runLastImageinActiveNoteAsync(file: TFile) {
+    const content = await this.app.vault.read(file);
+
+    // determine image links using regix
+    const matches = [...content.matchAll(/!\[\[(.+?\.(?:png|jpe?g))\]\]/gi)];
+
+    // find last appended image
+    const imageFile = matches[matches.length - 1][1];
+
+    if (matches.length === 0) {
+      new Notice("No image found in note.");
+      return;
+    }
+
+    const baseFolder = this.settings.defaultImageFolder.replace(/^\/|\/$/g, ''); // remove leading/trailing slashes
+    const fullRelativePath = `${baseFolder}/${imageFile}`;
+
+    const image = this.app.vault.getAbstractFileByPath(fullRelativePath);
+    console.log(fullRelativePath)
+
+    if (!(image instanceof TFile)) {
+      new Notice("Image file not found in vault.");
+      return;
+    }
+
+    
+    try {
+
+      const buffer = await this.app.vault.readBinary(image); // <-- returns Uint8Array
+      // Convert ArrayBuffer to Blob
+      const blob = new Blob([buffer]);
+
+      // Create an object URL that Tesseract can consume
+      const imageUrl = URL.createObjectURL(blob);
+              
+      
+  
+      new Notice(`Running OCR on ${imageFile}...`);
+
+      const result = await Tesseract.recognize(imageUrl, this.settings.ocrLang); // use Tesseract
+      const text = result.data.text;
+
+      // Copy to clipboard using web API
+      await navigator.clipboard.writeText(text);
+      new Notice("OCR result copied to clipboard :)");
+      await this.showOcrResultInSidebar(text, imageFile, this.settings.ocrLang); // show the result in the sidebar
+      new Notice("OCR result is shown in the side bar :)");
+    } catch (err) {
+      console.error("OCR failed:", err);
+      new Notice("OCR failed.");
+    }
+  }
+
+
   // show OCR in sidebar
   async showOcrResultInSidebar(resultText: string, path: string, language: string) {
     const leaf = this.app.workspace.getRightLeaf(false) ?? this.app.workspace.getRightLeaf(true);
