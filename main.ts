@@ -254,16 +254,16 @@ class OcrSidebarView extends ItemView {
     const isArabic = this.lang === 'ara';
 
     const title = container.createEl('h3', { text: `OCR Result from: ${this.title}` });
-    title.classList.add(".ocr-title")
+    title.classList.add(".ocr-title-Multilingual-OCR")
 
     const pre = container.createEl("pre", { text: this.content });
-    this.containerEl.classList.add("ocr-container");
+    this.containerEl.classList.add("ocr-container-Multilingual-OCR");
     
-    pre.classList.add("ocr-output");
+    pre.classList.add("ocr-output-Multilingual-OCR");
 
     // make the text direction to right if the language is arabic
     if (isArabic) {
-      pre.classList.add("isArabic")
+      pre.classList.add("isArabic-Multilingual-OCR")
     }
   }
 
@@ -287,7 +287,7 @@ class ImagePathInputModal extends Modal {
     contentEl.createEl('h2', { text: 'Enter relative image path (e.g., Attachments/image.png)' });
 
     const input = new TextComponent(contentEl);
-    input.inputEl.classList.add("modal-input")
+    input.inputEl.classList.add("modal-input-Multilingual-OCR")
 
     // set submit button
     new ButtonComponent(contentEl)
@@ -327,7 +327,7 @@ class SetLanguageModal extends Modal {
 
     const input = new TextComponent(contentEl);
     input.setValue(this.plugin.settings.ocrLang);
-    input.inputEl.classList.add("modal-input")
+    input.inputEl.classList.add("modal-input-Multilingual-OCR")
 
 
 
