@@ -29,7 +29,7 @@ export default class OCRPlugin extends Plugin {
     // run OCR for the last attached image in the note
     this.addCommand({
       id: 'ocr-image-to-clipboard',
-      name: 'OCR of the Last Image in the Active Note',
+      name: 'OCR of the last image in the active note',
       callback: async () => {
         const file = this.app.workspace.getActiveFile();
         if (!file) {
@@ -96,7 +96,7 @@ export default class OCRPlugin extends Plugin {
     // change lang code
     this.addCommand({
       id: 'set-ocr-language',
-      name: 'Set OCR Language Code',
+      name: 'Set OCR language code',
       callback: () => {
         // prompt the user a modal to enter the lang code
         new SetLanguageModal(this.app, async (langCode) => {
@@ -110,7 +110,7 @@ export default class OCRPlugin extends Plugin {
     // command for user entered path
     this.addCommand({
       id: 'ocr-from-typed-path',
-      name: 'OCR using Image Path',
+      name: 'OCR using image path',
       callback: () => {
         // prompt the user a modal to enter the image path
         new ImagePathInputModal(this.app, async (userPath) => {
@@ -139,7 +139,7 @@ export default class OCRPlugin extends Plugin {
             await navigator.clipboard.writeText(text);
             new Notice("OCR result copied to clipboard :)");
             await this.showOcrResultInSidebar(text, imageUrl, this.settings.ocrLang); // show results in sidebar
-            new Notice("OCR result is shown in the side bar :)");
+            new Notice("OCR result is shown in the side bar:)");
           } catch (err) {
             console.error("OCR failed:", err);
             new Notice("OCR failed.");
@@ -253,7 +253,7 @@ class OcrSidebarView extends ItemView {
 
     const isArabic = this.lang === 'ara';
 
-    const title = container.createEl('h3', { text: `OCR Result from: ${this.title}` });
+    const title = container.createEl('h3', { text: `OCR result from: ${this.title}` });
     title.classList.add(".ocr-title-Multilingual-OCR")
 
     const pre = container.createEl("pre", { text: this.content });
@@ -332,7 +332,7 @@ class SetLanguageModal extends Modal {
 
 
     new ButtonComponent(contentEl)
-      .setButtonText('Set Language')
+      .setButtonText('Set language')
       .onClick(() => {
         const lang = input.getValue().trim();
         if (lang) this.onSubmit(lang);
