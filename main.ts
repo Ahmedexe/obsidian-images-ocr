@@ -225,7 +225,18 @@ export default class OCRPlugin extends Plugin {
 
   // show OCR in sidebar
   async showOcrResultInSidebar(resultText: string, path: string, language: string) {
-    const leaf = this.app.workspace.getRightLeaf(false) ?? this.app.workspace.getRightLeaf(true);
+
+
+    let leaf = this.app.workspace.getLeavesOfType(OCR_VIEW_TYPE).first();
+
+    if (!leaf) {
+      leaf = this.app.workspace.getRightLeaf(false) as WorkspaceLeaf; // false = don’t split if one already exists
+      await leaf.setViewState({
+        type: OCR_VIEW_TYPE,
+        active: true,
+      });
+    }
+
     if (leaf) {
       await leaf.setViewState({
         type: OCR_VIEW_TYPE,
@@ -233,11 +244,16 @@ export default class OCRPlugin extends Plugin {
       });
     
       // pass values
-      const view = leaf.view as OcrSidebarView;
-      (view as any).content = resultText;
-      (view as any).title = path;
-      (view as any).lang = language;
-      await view.onOpen();
+      const view = leaf.view;
+      if (view instanceof OcrSidebarView) {
+        
+        view.setOcrResult(resultText, path, language)
+
+      } else {
+        console.warn("Leaf does not contain an OCR view:", view);
+      }
+      
+      
     }
     
     
@@ -272,8 +288,22 @@ class OcrSidebarView extends ItemView {
     return "OCR Result";
   }
 
+  public setOcrResult(content: string, title: string, lang: string) {
+    this.content = content;
+    this.lang = lang;
+    this.redraw();  // refresh DOM
+  }
+
   // construct sidebar view
   async onOpen() {
+    this.redraw()
+  }
+
+  async onClose() {
+    this.content = '';
+  }
+
+  private redraw() {
     const container = this.containerEl.children[1];
     container.empty();
 
@@ -291,10 +321,6 @@ class OcrSidebarView extends ItemView {
     if (isArabic) {
       pre.classList.add("isArabic-Multilingual-OCR")
     }
-  }
-
-  async onClose() {
-    this.content = '';
   }
 }
 
