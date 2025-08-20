@@ -1,4 +1,4 @@
-import { App, Plugin, Notice, Modal, TextComponent, ButtonComponent, PluginSettingTab, Setting, ItemView, WorkspaceLeaf, TFile, normalizePath } from 'obsidian';
+import { App, Plugin, Notice, Modal, TextComponent, ButtonComponent, PluginSettingTab, Setting, ItemView, WorkspaceLeaf, TFile, normalizePath, AbstractInputSuggest } from 'obsidian';
 import * as Tesseract from 'tesseract.js';
 
 
@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS: OCRPluginSettings = {
   defaultImageFolder: 'Attachments/',
   ocrLang: 'eng'
 };
+
 
 export default class OCRPlugin extends Plugin {
   public settings: OCRPluginSettings;
@@ -291,6 +292,7 @@ class OcrSidebarView extends ItemView {
   public setOcrResult(content: string, title: string, lang: string) {
     this.content = content;
     this.lang = lang;
+    this.title = title
     this.redraw();  // refresh DOM
   }
 
@@ -324,6 +326,41 @@ class OcrSidebarView extends ItemView {
   }
 }
 
+class FileSuggest extends AbstractInputSuggest<TFile> {
+  private input: TextComponent;
+
+  constructor(app: App, input: TextComponent) {
+    super(app, input.inputEl);
+    this.input = input;
+  }
+
+  // Return a filtered list of files given the query
+  getSuggestions(query: string): TFile[] {
+    const q = query.toLowerCase().trim();
+    const files = this.app.vault.getFiles();
+    if (!q) return files.slice(0, 50); // cap for performance
+    return files
+      .filter(f => f.path.toLowerCase().includes(q))
+      .slice(0, 50);
+  }
+
+  // How each suggestion is rendered in the popup
+  renderSuggestion(file: TFile, el: HTMLElement) {
+    el.addClass("mod-complex");
+    const name = el.createEl("div", { text: file.basename });
+    name.addClass("suggestion-title");
+    const path = el.createEl("div", { text: file.path });
+    path.addClass("suggestion-note");
+  }
+
+  // What happens when a suggestion is chosen
+  selectSuggestion(file: TFile) {
+    this.input.setValue(file.path);       // write the full vault-relative path
+    this.input.inputEl.trigger("input");  // notify any listeners
+    this.close();                         // close the suggest popup
+  }
+}
+
 // path entering modal
 class ImagePathInputModal extends Modal {
   onSubmit: (path: string) => void;
@@ -339,6 +376,9 @@ class ImagePathInputModal extends Modal {
     contentEl.createEl('h2', { text: 'Enter relative image path (e.g., Attachments/image.png)' });
 
     const input = new TextComponent(contentEl);
+    input.setPlaceholder("Select a file... ")
+    new FileSuggest(this.app, input)
+
     input.inputEl.classList.add("modal-input-Multilingual-OCR")
 
     // set submit button
