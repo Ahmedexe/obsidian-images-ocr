@@ -1,4 +1,4 @@
-import { App, Plugin, Notice, Modal, TextComponent, ButtonComponent, PluginSettingTab, Setting, ItemView, WorkspaceLeaf, TFile } from 'obsidian';
+import { App, Plugin, Notice, Modal, TextComponent, ButtonComponent, PluginSettingTab, Setting, ItemView, WorkspaceLeaf, TFile, normalizePath } from 'obsidian';
 import * as Tesseract from 'tesseract.js';
 
 
@@ -181,7 +181,8 @@ export default class OCRPlugin extends Plugin {
     } */
 
     const baseFolder = this.settings.defaultImageFolder.replace(/^\/|\/$/g, ''); // remove leading/trailing slashes
-    const fullRelativePath = `${baseFolder}/${imageFile}`;
+    const rwPath = `${baseFolder}/${imageFile}`;
+    const fullRelativePath = normalizePath(rwPath);
 
     const image = this.app.vault.getAbstractFileByPath(fullRelativePath);
     console.log(fullRelativePath)
