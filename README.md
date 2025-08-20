@@ -11,6 +11,7 @@
 -   Save the OCR result directly into the _clipboard_.
 -   Display the OCR result in the _sidebar_ for easy highlighting and copy-pasting.
 -   Specify the _language_.
+-   More than 100 languages supported, for langauges codes check [Tesseract.js](https://tesseract.projectnaptha.com/)
 -   RTL support for _Arabic_
 
 ![demo](images/demo.gif)
