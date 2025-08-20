@@ -451,7 +451,7 @@ class OCRSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'OCR Plugin Settings' });
+
 
     // image default path setting
     new Setting(containerEl)
