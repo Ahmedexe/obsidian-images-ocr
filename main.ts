@@ -172,22 +172,24 @@ export default class OCRPlugin extends Plugin {
 
 
     // find last appended image
-    // const imageFile = matches[matches.length - 1][1];
-    const imageFile = embeds[embeds.length - 1].link;
-    
-    /* if (matches.length === 0) {
-      new Notice("No image found in note.");
-      return;
-    } */
+    const link = embeds[embeds.length - 1].link;
+  
+    // 1. Try Obsidian's native resolution
+    let imageFile = this.app.metadataCache.getFirstLinkpathDest(link, file.path);
 
-    const baseFolder = this.settings.defaultImageFolder.replace(/^\/|\/$/g, ''); // remove leading/trailing slashes
-    const rwPath = `${baseFolder}/${imageFile}`;
-    const fullRelativePath = normalizePath(rwPath);
+    // 2. If that failed, fall back to default folder + normalizePath
+    if (!(imageFile instanceof TFile)) {
+      const baseFolder = this.settings.defaultImageFolder.replace(/^\/|\/$/g, '');
+      const rawPath = `${baseFolder}/${link}`;
+      const fullPath = normalizePath(rawPath);
 
-    const image = this.app.vault.getAbstractFileByPath(fullRelativePath);
-    console.log(fullRelativePath)
+      const absFile = this.app.vault.getAbstractFileByPath(fullPath);
+      if (absFile instanceof TFile) {
+        imageFile = absFile;
+      }
+    }
 
-    if (!(image instanceof TFile)) {
+    if (!(imageFile instanceof TFile)) {
       new Notice("Image file not found in vault.");
       return;
     }
@@ -195,7 +197,7 @@ export default class OCRPlugin extends Plugin {
     
     try {
 
-      const buffer = await this.app.vault.readBinary(image); // <-- returns Uint8Array
+      const buffer = await this.app.vault.readBinary(imageFile); // <-- returns Uint8Array
       // Convert ArrayBuffer to Blob
       const blob = new Blob([buffer]);
 
@@ -212,7 +214,7 @@ export default class OCRPlugin extends Plugin {
       // Copy to clipboard using web API
       await navigator.clipboard.writeText(text);
       new Notice("OCR result copied to clipboard :)");
-      await this.showOcrResultInSidebar(text, imageFile, this.settings.ocrLang); // show the result in the sidebar
+      await this.showOcrResultInSidebar(text, link, this.settings.ocrLang); // show the result in the sidebar
       new Notice("OCR result is shown in the side bar :)");
     } catch (err) {
       console.error("OCR failed:", err);
