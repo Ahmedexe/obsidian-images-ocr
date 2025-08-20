@@ -95,7 +95,7 @@ export default class OCRPlugin extends Plugin {
             // Copy to clipboard
             await navigator.clipboard.writeText(text);
             new Notice("OCR result copied to clipboard :)");
-            await this.showOcrResultInSidebar(text, imageUrl, this.settings.ocrLang); // show results in sidebar
+            await this.showOcrResultInSidebar(text, userPath, this.settings.ocrLang); // show results in sidebar
             new Notice("OCR result is shown in the side bar:)");
           } catch (err) {
             console.error("OCR failed:", err);
@@ -156,18 +156,29 @@ export default class OCRPlugin extends Plugin {
   }
 
   async runLastImageinActiveNoteAsync(file: TFile) {
-    const content = await this.app.vault.read(file);
+    
 
-    // determine image links using regix
-    const matches = [...content.matchAll(/!\[\[(.+?\.(?:png|jpe?g))\]\]/gi)];
+    const imageExtensions = ['png', 'jpg', 'jpeg'];
+    const embeds = this.app.metadataCache.getFileCache(file)?.embeds?.filter(embed => {
+      if (!embed.link) return false;
+      const lower = embed.link.toLowerCase();
+      return imageExtensions.some(ext => lower.endsWith('.' + ext));
+    }) ?? [];
 
-    // find last appended image
-    const imageFile = matches[matches.length - 1][1];
-
-    if (matches.length === 0) {
-      new Notice("No image found in note.");
+    if (embeds.length === 0) {
+      new Notice("No image found in note.")
       return;
     }
+
+
+    // find last appended image
+    // const imageFile = matches[matches.length - 1][1];
+    const imageFile = embeds[embeds.length - 1].link;
+    
+    /* if (matches.length === 0) {
+      new Notice("No image found in note.");
+      return;
+    } */
 
     const baseFolder = this.settings.defaultImageFolder.replace(/^\/|\/$/g, ''); // remove leading/trailing slashes
     const fullRelativePath = `${baseFolder}/${imageFile}`;
