@@ -33,11 +33,7 @@ export default class OCRPlugin extends Plugin {
       name: 'OCR of the last image in the active note',
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
-
-        if (!file) {
-          new Notice("No active file.");
-          return false;
-        }
+        
 
         if (!checking) {
           this.runLastImageinActiveNoteAsync(file)
@@ -286,7 +282,7 @@ class OcrSidebarView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "OCR Result";
+    return "OCR result";
   }
 
   public setOcrResult(content: string, title: string, lang: string) {
