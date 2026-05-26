@@ -152,8 +152,12 @@ export default class OCRPlugin extends Plugin {
   
   }
 
-  async runLastImageinActiveNoteAsync(file: TFile) {
+  async runLastImageinActiveNoteAsync(file: TFile | null) {
     
+    if (!file) {
+      new Notice("No active note found.");
+      return;
+    }
 
     const imageExtensions = ['png', 'jpg', 'jpeg'];
     const embeds = this.app.metadataCache.getFileCache(file)?.embeds?.filter(embed => {
@@ -476,6 +480,5 @@ class OCRSettingTab extends PluginSettingTab {
       );
   }
 }
-
 
 
