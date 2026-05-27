@@ -101,6 +101,15 @@ export default class OCRPlugin extends Plugin {
         }).open();
       }
     });
+
+    // command for selecting an image from the system file picker
+    this.addCommand({
+      id: 'ocr-from-file-picker',
+      name: 'OCR using file picker',
+      callback: () => {
+        this.openImageFilePicker();
+      }
+    });
     
     // register the sidebar view
     this.registerView(
@@ -221,6 +230,44 @@ export default class OCRPlugin extends Plugin {
       console.error("OCR failed:", err);
       new Notice("OCR failed.");
     }
+  }
+
+  openImageFilePicker() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/png,image/jpeg";
+    input.style.display = "none";
+
+    input.onchange = async () => {
+      const image = input.files?.[0];
+      input.remove();
+
+      if (!image) {
+        return;
+      }
+
+      const imageUrl = URL.createObjectURL(image);
+
+      try {
+        new Notice(`Running OCR (${this.settings.ocrLang})...`);
+
+        const result = await Tesseract.recognize(imageUrl, this.settings.ocrLang);
+        const text = result.data.text;
+
+        await navigator.clipboard.writeText(text);
+        new Notice("OCR result copied to clipboard :)");
+        await this.showOcrResultInSidebar(text, image.name, this.settings.ocrLang);
+        new Notice("OCR result is shown in the side bar :)");
+      } catch (err) {
+        console.error("OCR failed:", err);
+        new Notice("OCR failed.");
+      } finally {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+
+    document.body.appendChild(input);
+    input.click();
   }
 
 
@@ -480,5 +527,4 @@ class OCRSettingTab extends PluginSettingTab {
       );
   }
 }
-
 
